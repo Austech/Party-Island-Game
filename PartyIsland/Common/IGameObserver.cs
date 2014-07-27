@@ -5,8 +5,8 @@ using System.Text;
 
 namespace Common
 {
-    public interface EventReceiver
+    public interface IGameObserver
     {
-        void HandleEvent(Event e);
+        void HandleEvent(GameEvent ge);
     }
 }

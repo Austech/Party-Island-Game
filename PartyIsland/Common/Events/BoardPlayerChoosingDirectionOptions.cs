@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Common.Events
 {
-    public class BoardPlayerChoosingDirectionOptions: Event
+    public class BoardPlayerChoosingDirectionOptions: GameEvent
     {
         byte[] AvailableForks;
 

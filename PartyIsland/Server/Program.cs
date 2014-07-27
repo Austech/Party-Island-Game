@@ -10,24 +10,42 @@ namespace Server
 {
     class Program
     {
-        private class DebugEventListener: EventReceiver
+        public static Dictionary<string, IGameSubject> Subjects;
+        private static DebugEventListener DebugObserver;
+
+        public class DebugEventListener: IGameObserver, IGameSubject
         {
-            public DebugEventListener(EventDispatcher eDispatcher)
+            private event Common.NotificationDelegate observers;
+
+            public DebugEventListener()
             {
-                eDispatcher.RegisterReceiver(this);
             }
 
-            public void HandleEvent(Event ev)
+            public void HandleEvent(GameEvent ev)
             {
                 Console.WriteLine("EVENT: " + ev.Type + "; " + BitConverter.ToString(ev.Data));
             }
-        }
 
-        static EventDispatcher eDispatcher = null;
+            public void Subscribe(NotificationDelegate callback)
+            {
+                observers += callback;
+            }
+
+            public void Unsubscribe(NotificationDelegate callback)
+            {
+                observers -= callback;
+            }
+
+            public void Notify(GameEvent ge)
+            {
+                if(observers != null)
+                    observers(ge);
+            }
+        }
 
         private static void InputThread()
         {
-            eDispatcher.Dispatch(new Event(Event.EventTypes.PLAYER_JOINED, new byte[0] { }));
+            DebugObserver.Notify(new GameEvent(GameEvent.EventTypes.PLAYER_JOINED, new byte[0] { }));
             Common.Events.GameInput inputEvent = new Common.Events.GameInput(0);
             while (true)
             {
@@ -36,64 +54,64 @@ namespace Server
                 if (input == "primary")
                 {
                     inputEvent.SetInput(Common.Events.GameInput.InputTypes.PRIMARY, true);
-                    eDispatcher.Dispatch(inputEvent);
+                    DebugObserver.Notify(inputEvent);
                     inputEvent.SetInput(Common.Events.GameInput.InputTypes.PRIMARY, false);
-                    eDispatcher.Dispatch(inputEvent);
+                    DebugObserver.Notify(inputEvent);
                 }
                 else if (input == "left")
                 {
                     inputEvent.SetInput(Common.Events.GameInput.InputTypes.LEFT, true);
-                    eDispatcher.Dispatch(inputEvent);
+                    DebugObserver.Notify(inputEvent);
                     inputEvent.SetInput(Common.Events.GameInput.InputTypes.LEFT, false);
-                    eDispatcher.Dispatch(inputEvent);
+                    DebugObserver.Notify(inputEvent);
                 }
                 else if (input == "right")
                 {
                     inputEvent.SetInput(Common.Events.GameInput.InputTypes.RIGHT, true);
-                    eDispatcher.Dispatch(inputEvent);
+                    DebugObserver.Notify(inputEvent);
                     inputEvent.SetInput(Common.Events.GameInput.InputTypes.RIGHT, false);
-                    eDispatcher.Dispatch(inputEvent);
+                    DebugObserver.Notify(inputEvent);
                 }
                 else if (input == "up")
                 {
                     inputEvent.SetInput(Common.Events.GameInput.InputTypes.UP, true);
-                    eDispatcher.Dispatch(inputEvent);
+                    DebugObserver.Notify(inputEvent);
                     inputEvent.SetInput(Common.Events.GameInput.InputTypes.UP, false);
-                    eDispatcher.Dispatch(inputEvent);
+                    DebugObserver.Notify(inputEvent);
                 }
                 else if (input == "down")
                 {
                     inputEvent.SetInput(Common.Events.GameInput.InputTypes.DOWN, true);
-                    eDispatcher.Dispatch(inputEvent);
+                    DebugObserver.Notify(inputEvent);
                     inputEvent.SetInput(Common.Events.GameInput.InputTypes.DOWN, false);
-                    eDispatcher.Dispatch(inputEvent);
+                    DebugObserver.Notify(inputEvent);
                 }
             }
         }
 
         static void Main(string[] args)
         {
-            Game game = new Game();
-            game.SetGameState(new Common.GameStates.CharacterSelection());
+            Subjects = new Dictionary<string, IGameSubject>();
 
-            eDispatcher = game.EDispatcher;
 
-            DebugEventListener debugEvent = new DebugEventListener(eDispatcher);
+            DebugObserver = new DebugEventListener();
 
-            Board board = new Board(eDispatcher, Tile.TileMapFromStream(new StreamReader(File.OpenRead("testmap.txt"))));
+            Board board = new Board(Tile.TileMapFromStream(new StreamReader(File.OpenRead("testmap.txt"))));
             board.Characters.Add(new BoardCharacter());
             board.Characters[0].Facing = BoardCharacter.FacingDirections.DOWN;
-            
-            GameServer server = new GameServer(eDispatcher);
-            server.Start();
 
-            Thread inputThread = new Thread(new ThreadStart(InputThread));
-            inputThread.Start();
-            
+            Subjects.Add("Board", board);
+            Subjects.Add("Debugger", DebugObserver);
+
+            Subjects["Board"].Subscribe(DebugObserver.HandleEvent);
+            Subjects["Debugger"].Subscribe(board.HandleEvent);
+            Subjects["Debugger"].Subscribe(DebugObserver.HandleEvent);
+
+            new Thread(new ThreadStart(InputThread)).Start();
+
             for (; ; )
             {
-                game.Update(0);
-                server.Update();
+                board.Update();
             }
         }
     }

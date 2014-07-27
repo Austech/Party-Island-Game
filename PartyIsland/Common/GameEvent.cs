@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Common
 {
-    public class Event
+    public class GameEvent
     {
         public enum EventTypes: byte
         {
@@ -21,6 +21,13 @@ namespace Common
             /// Called when a player joins
             /// </summary>
             PLAYER_JOINED,
+
+            /// <summary>
+            /// Number of players in game
+            /// 1 byte of data
+            /// 0: Number of players (0-255)
+            /// </summary>
+            PLAYER_COUNT,
 
             /// <summary>
             /// 1 byte determining the minigame id (0-255)
@@ -86,25 +93,27 @@ namespace Common
         public byte[] Data;
         public String Sender;
 
-        public Event(EventTypes type, byte[] data)
+        public GameEvent(EventTypes type, byte[] data)
         {
             Sender = "";
             Type = type;
             Data = data;
         }
-        public Event(EventTypes type, byte[] data, String sender)
+        public GameEvent(EventTypes type, byte[] data, String sender)
         {
             Sender = sender;
             Type = type;
             Data = data;
         }
 
-        public static T GetDetailedEvent<T>(Event ev) where T : Event
+        public static T GetDetailedEvent<T>(GameEvent ev) where T : GameEvent
         {
             switch (ev.Type)
             {
                 case EventTypes.INPUT:
-                    return (T)((Event)new Events.GameInput(ev.Data));
+                    var ret = new Events.GameInput(ev.Data);
+                    ret.Sender = ev.Sender;
+                    return (T)((GameEvent)ret);
                 default:
                     return (T)ev;
             }

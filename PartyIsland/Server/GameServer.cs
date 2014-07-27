@@ -7,22 +7,20 @@ using Lidgren.Network;
 
 namespace Server
 {
-    class GameServer : EventReceiver
+    class GameServer : IGameObserver, IGameSubject
     {
-        NetServer server;
-        EventDispatcher eDispatcher;
+        private NetServer server;
 
         /// <summary>
         /// Used ids for connected clients
         /// This is used for assinging a unique id to a client
         /// </summary>
-        List<int> connectedIds; //used ids for connected clients 
+        private List<int> connectedIds; //used ids for connected clients
 
-        public GameServer(EventDispatcher dispatcher)
+        private event Common.NotificationDelegate observers;
+
+        public GameServer()
         {
-            eDispatcher = dispatcher;
-            eDispatcher.RegisterReceiver(this);
-
             NetPeerConfiguration config = new NetPeerConfiguration("PARTY_ISLAND");
             config.Port = 1337;
             server = new NetServer(config);
@@ -72,10 +70,12 @@ namespace Server
                         switch (msg.SenderConnection.Status)
                         {
                             case NetConnectionStatus.Connected:
-                                eDispatcher.Dispatch(new Event(Event.EventTypes.PLAYER_JOINED, new byte[0] { }));
+                                Notify(new GameEvent(GameEvent.EventTypes.PLAYER_JOINED, new byte[0] { }));
                                 var uniqueId = GetUniqueId();
                                 connectedIds.Add(uniqueId);
                                 msg.SenderConnection.Tag = uniqueId;
+
+                                Notify(new GameEvent(GameEvent.EventTypes.PLAYER_COUNT, new byte[1] { (byte)connectedIds.Count }));
                                 break;
                             case NetConnectionStatus.Disconnected:
                                 connectedIds.Remove((int)msg.SenderConnection.Tag);
@@ -88,16 +88,16 @@ namespace Server
                         var incomingEvent = EventFromMessage(msg);
                         if (incomingEvent != null)
                         {
-                            if (incomingEvent.Type == Event.EventTypes.INPUT)
+                            if (incomingEvent.Type == GameEvent.EventTypes.INPUT)
                             {
-                                var inputEvent = Event.GetDetailedEvent<Common.Events.GameInput>(incomingEvent);
+                                var inputEvent = GameEvent.GetDetailedEvent<Common.Events.GameInput>(incomingEvent);
                                 inputEvent.PlayerId = (byte)((int)msg.SenderConnection.Tag);
                                 inputEvent.UpdateByteArray();
-                                eDispatcher.Dispatch(inputEvent);
+                                Notify(inputEvent);
                             }
                             else if(incomingEvent.Sender != "Network")
                             {
-                                eDispatcher.Dispatch(incomingEvent);
+                                Notify(incomingEvent);
                             }
                         }
                         break;
@@ -107,20 +107,35 @@ namespace Server
             }
         }
 
-        public void HandleEvent(Event ev)
+        public void Subscribe(NotificationDelegate callback)
+        {
+            observers += callback;
+        }
+
+        public void Unsubscribe(NotificationDelegate callback)
+        {
+            observers -= callback;
+        }
+
+        public void Notify(GameEvent ge)
+        {
+            observers(ge);
+        }
+
+        public void HandleEvent(GameEvent ev)
         {
             server.SendToAll(MessageFromEvent(ev), NetDeliveryMethod.ReliableOrdered);
         }
 
-        private Event EventFromMessage(NetIncomingMessage msg)
+        private GameEvent EventFromMessage(NetIncomingMessage msg)
         {
-            Event.EventTypes type = (Event.EventTypes)msg.ReadByte();
+            GameEvent.EventTypes type = (GameEvent.EventTypes)msg.ReadByte();
             var data = msg.ReadBytes(msg.LengthBytes - 1);
 
-            return new Event(type, data, "Network");
+            return new GameEvent(type, data, "Network");
         }
 
-        private NetOutgoingMessage MessageFromEvent(Event ev)
+        private NetOutgoingMessage MessageFromEvent(GameEvent ev)
         {
             NetOutgoingMessage msg = server.CreateMessage();
             msg.Write((byte)ev.Type);

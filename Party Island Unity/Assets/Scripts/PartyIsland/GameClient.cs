@@ -43,7 +43,16 @@ namespace PartyIsland
                     case NetIncomingMessageType.Data:
                         var eventFromMessage = EventFromMessage(msg);
                         if (eventFromMessage != null)
-                            EDispatcher.Dispatch(eventFromMessage);
+                        {
+                            if (eventFromMessage.Type == Event.EventTypes.INPUT)
+                            {
+                                EDispatcher.Dispatch(Event.GetDetailedEvent<Common.Events.GameInput>(eventFromMessage));
+                            }
+                            else
+                            {
+                                EDispatcher.Dispatch(eventFromMessage);
+                            }
+                        }
                         break;
                 }
             }
@@ -51,7 +60,6 @@ namespace PartyIsland
 
         public void HandleEvent(Event ev)
         {
-            UnityEngine.Debug.Log(ev.Type);
             switch (ev.Type)
             {
                 case Event.EventTypes.INPUT:

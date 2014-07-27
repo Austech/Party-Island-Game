@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Common.Events
 {
-    public class GameInput : Event
+    public class GameInput : GameEvent
     {
         const int INPUT_COUNT = 6;
         public enum InputTypes

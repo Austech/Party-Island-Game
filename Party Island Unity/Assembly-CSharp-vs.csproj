@@ -5,7 +5,7 @@
 	<Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
 	<ProductVersion>10.0.20506</ProductVersion>
 	<SchemaVersion>2.0</SchemaVersion>
-	<ProjectGuid>{0354880C-BD41-BE82-C1B2-2EA73C4A065E}</ProjectGuid>
+	<ProjectGuid>{A140AC53-BEEF-9B84-1B20-DCE25437F634}</ProjectGuid>
 	<OutputType>Library</OutputType>
 	<AppDesignerFolder>Properties</AppDesignerFolder>
 	<RootNamespace></RootNamespace>
@@ -51,10 +51,10 @@
      <Compile Include="Assets\Scripts\PartyIsland\GameClient.cs" />
      <Compile Include="Assets\Scripts\PartyIsland\GlobalVariables.cs" />
  <Reference Include="Common">
- <HintPath>C:/Users/Austin/Documents/Unity Projects/Party Island/Assets/Common.dll</HintPath>
+ <HintPath>C:/Users/Austin/Documents/GitHub/Party-Island-Game/Party Island Unity/Assets/Common.dll</HintPath>
  </Reference>
  <Reference Include="Lidgren.Network">
- <HintPath>C:/Users/Austin/Documents/Unity Projects/Party Island/Assets/Lidgren.Network.dll</HintPath>
+ <HintPath>C:/Users/Austin/Documents/GitHub/Party-Island-Game/Party Island Unity/Assets/Lidgren.Network.dll</HintPath>
  </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

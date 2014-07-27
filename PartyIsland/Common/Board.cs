@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Common
 {
-    public class Board : EventReceiver
+    public class Board : IGameSubject, IGameObserver
     {
         public enum BoardStates: byte
         {
@@ -38,14 +38,12 @@ namespace Common
 
         public Tile[,] TileMap;
 
-        public EventDispatcher EDispatcher;
-
         public BoardCharacter.FacingDirections ChosenDirection; //direction the character is choosing for forks
 
-        public Board(EventDispatcher edispatcher, Tile[,] map)
+        private event Common.NotificationDelegate observers;
+
+        public Board(Tile[,] map)
         {
-            EDispatcher = edispatcher;
-            EDispatcher.RegisterReceiver(this);
 
             ChosenDirection = BoardCharacter.FacingDirections.UP;
 
@@ -71,7 +69,7 @@ namespace Common
                         var currentCharacter = Characters[CurrentPlayer];
 
                         currentCharacter.LandedTileType = TileMap[currentCharacter.X, currentCharacter.Y].Type;
-                        EDispatcher.Dispatch(new Event(Event.EventTypes.BOARD_PLAYER_LANDED, new byte[3] { CurrentPlayer, (byte)currentCharacter.X, (byte)currentCharacter.Y }));
+                        Notify(new GameEvent(GameEvent.EventTypes.BOARD_PLAYER_LANDED, new byte[3] { CurrentPlayer, (byte)currentCharacter.X, (byte)currentCharacter.Y }));
 
                         CurrentPlayer++;
 
@@ -80,7 +78,7 @@ namespace Common
                         {
                             State = BoardStates.CHOOSING_MINIGAME;
                             byte miniGameId = (byte)random.Next(0, 255);
-                            EDispatcher.Dispatch(new Event(Event.EventTypes.MINIGAME_SELECTED, new byte[1] { miniGameId }));
+                            Notify(new GameEvent(GameEvent.EventTypes.MINIGAME_SELECTED, new byte[1] { miniGameId }));
                             State = BoardStates.END;
                         }
                         else
@@ -107,13 +105,13 @@ namespace Common
                             currentCharacter.X += offset[0];
                             currentCharacter.Y += offset[1];
 
-                            EDispatcher.Dispatch(new Event(Event.EventTypes.BOARD_PLAYER_MOVED, new byte[3] { CurrentPlayer, (byte)currentCharacter.X, (byte)currentCharacter.Y }));
+                            Notify(new GameEvent(GameEvent.EventTypes.BOARD_PLAYER_MOVED, new byte[3] { CurrentPlayer, (byte)currentCharacter.X, (byte)currentCharacter.Y }));
 
                             if (TileMap[currentCharacter.X, currentCharacter.Y].Type == Tile.TileTypes.FORK)
                             {
                                 byte[] data = new byte[5] { CurrentPlayer, 0, 0, 0, 0 };
                                 ChosenDirection = TileMap[currentCharacter.X, currentCharacter.Y].Forks[0];
-                                EDispatcher.Dispatch(new Events.BoardPlayerChoosingDirectionOptions(TileMap[currentCharacter.X, currentCharacter.Y], CurrentPlayer));
+                                Notify(new Events.BoardPlayerChoosingDirectionOptions(TileMap[currentCharacter.X, currentCharacter.Y], CurrentPlayer));
                                 State = BoardStates.PLAYER_CHOOSING_FORK;
                             }
                             else
@@ -131,11 +129,26 @@ namespace Common
             }
         }
 
-        public void HandleEvent(Event ev)
+        public void Subscribe(NotificationDelegate callback)
+        {
+            observers += callback;
+        }
+
+        public void Unsubscribe(NotificationDelegate callback)
+        {
+            observers -= callback;
+        }
+
+        public void Notify(GameEvent ge)
+        {
+            observers(ge);
+        }
+
+        public void HandleEvent(GameEvent ev)
         {
             switch (ev.Type)
             {
-                case Event.EventTypes.INPUT:
+                case GameEvent.EventTypes.INPUT:
                     var inputEvent = (Events.GameInput)ev;
                     if (inputEvent.PlayerId != CurrentPlayer)
                         break;
@@ -155,7 +168,7 @@ namespace Common
                                     //Choose Fork
                                     Characters[CurrentPlayer].Facing = ChosenDirection;
                                     State = BoardStates.PLAYER_MOVING;
-                                    EDispatcher.Dispatch(new Event(Event.EventTypes.BOARD_PLAYER_PLAYER_SELECTED_DIRECTION, new byte[2] { CurrentPlayer, (byte)Characters[CurrentPlayer].Facing }));
+                                    Notify(new GameEvent(GameEvent.EventTypes.BOARD_PLAYER_PLAYER_SELECTED_DIRECTION, new byte[2] { CurrentPlayer, (byte)Characters[CurrentPlayer].Facing }));
                                 }
                                 break;
                         }
@@ -178,7 +191,7 @@ namespace Common
                             if (tile.Forks.Contains(facingPosition))
                             {
                                 ChosenDirection = facingPosition;
-                                EDispatcher.Dispatch(new Event(Event.EventTypes.BOARD_PLAYER_CHANGED_DIRECTION_SELECTION, new byte[2] { CurrentPlayer, (byte)ChosenDirection }));
+                                Notify(new GameEvent(GameEvent.EventTypes.BOARD_PLAYER_CHANGED_DIRECTION_SELECTION, new byte[2] { CurrentPlayer, (byte)ChosenDirection }));
                             }
                             break;
                     }
@@ -189,7 +202,7 @@ namespace Common
         public void Roll()
         {
             RollValue = random.Next(1, 11);
-            EDispatcher.Dispatch(new Event(Event.EventTypes.BOARD_PLAYER_ROLLED, new byte[2] { CurrentPlayer, (byte)RollValue }));
+            Notify(new GameEvent(GameEvent.EventTypes.BOARD_PLAYER_ROLLED, new byte[2] { CurrentPlayer, (byte)RollValue }));
 
             State = BoardStates.PLAYER_MOVING;
         }

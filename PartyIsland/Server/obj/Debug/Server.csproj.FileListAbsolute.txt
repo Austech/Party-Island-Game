@@ -11,3 +11,8 @@ C:\Users\Austin\Documents\Visual Studio 2013\Projects\PartyIsland\Server\bin\Deb
 C:\Users\Austin\Documents\GitHub\Party-Island-Game\PartyIsland\Server\bin\Debug\Server.exe.config
 C:\Users\Austin\Documents\GitHub\Party-Island-Game\PartyIsland\Server\obj\Debug\Server.exe
 C:\Users\Austin\Documents\GitHub\Party-Island-Game\PartyIsland\Server\obj\Debug\Server.pdb
+C:\Users\Austin\Documents\GitHub\Party-Island-Game\PartyIsland\Server\bin\Debug\Server.exe
+C:\Users\Austin\Documents\GitHub\Party-Island-Game\PartyIsland\Server\bin\Debug\Server.pdb
+C:\Users\Austin\Documents\GitHub\Party-Island-Game\PartyIsland\Server\bin\Debug\Common.dll
+C:\Users\Austin\Documents\GitHub\Party-Island-Game\PartyIsland\Server\bin\Debug\Common.pdb
+C:\Users\Austin\Documents\GitHub\Party-Island-Game\PartyIsland\Server\obj\Debug\Server.csprojResolveAssemblyReference.cache

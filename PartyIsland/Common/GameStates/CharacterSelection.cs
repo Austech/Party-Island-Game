@@ -8,7 +8,7 @@ namespace Common.GameStates
     /// <summary>
     /// State for handling players selecting the character they want to choose
     /// </summary>
-    public class CharacterSelection : GameState
+    public class CharacterSelection : GameState, IGameSubject, IGameObserver
     {
         public class CharacterSelectionData
         {
@@ -22,16 +22,21 @@ namespace Common.GameStates
             }
         }
 
-        public enum CharacterSelectionStates
-        {
-
-        }
-
         public List<CharacterSelectionData> PlayerSelections;
         public static int MaxSelectionOptions = 5;  //Max Available Characters to select
 
+        public int PlayerCount
+        {
+            get;
+            private set;
+        }
+
+        private Common.NotificationDelegate observers;
+
         public CharacterSelection()
         {
+            PlayerCount = 0;
+
             PlayerSelections = new List<CharacterSelectionData>();
             for (var i = 0; i < PlayerCount; i++)
             {
@@ -66,30 +71,40 @@ namespace Common.GameStates
             {
                 player.SelectionId = 0;
             }
-            EDispatcher.Dispatch(new Event(Event.EventTypes.CHARACTERSELECT_PLAYER_CHANGED_SELECTION, new byte[1]{(byte)player.SelectionId}));
+            Notify(new GameEvent(GameEvent.EventTypes.CHARACTERSELECT_PLAYER_CHANGED_SELECTION, new byte[1]{(byte)player.SelectionId}));
         }
 
-        public override void HandleEvent(Event ev)
+        public void Subscribe(NotificationDelegate callback)
         {
-            base.HandleEvent(ev);
+            observers += callback;
+        }
+
+        public void Unsubscribe(NotificationDelegate callback)
+        {
+            observers -= callback;
+        }
+
+        public void Notify(GameEvent ge)
+        {
+            observers(ge);
+        }
+
+        public void HandleEvent(GameEvent ev)
+        {
             switch (ev.Type)
             {
-                case Event.EventTypes.INPUT:
+                case GameEvent.EventTypes.INPUT:
                     var inputEvent = (Events.GameInput)ev;
                     var playerSelection = PlayerSelections[inputEvent.PlayerId];
 
+                    if (inputEvent.PlayerId >= PlayerSelections.Count)
+                        break;
                     if (inputEvent.GetInput(Events.GameInput.InputTypes.PRIMARY))
                     {
                         if (!IsSelected(playerSelection.SelectionId))
                         {
                             playerSelection.IsReady = true;
-                            EDispatcher.Dispatch(new Event(Event.EventTypes.CHARACTERSELECT_PLAYER_CONFIRMED_SELECTION, new byte[1] { (byte)playerSelection.SelectionId }));
-
-                            
-                            for (var i = 0; i < PlayerSelections.Count; i++)
-                            {
-
-                            }
+                            Notify(new GameEvent(GameEvent.EventTypes.CHARACTERSELECT_PLAYER_CONFIRMED_SELECTION, new byte[1] { (byte)playerSelection.SelectionId }));
                         }
                     }
                     if (inputEvent.GetInput(Events.GameInput.InputTypes.LEFT) && playerSelection.IsReady == false)
@@ -101,7 +116,8 @@ namespace Common.GameStates
                         SetPlayerSelection(playerSelection, playerSelection.SelectionId + 1);
                     }
                     break;
-                case Event.EventTypes.PLAYER_JOINED:
+                case GameEvent.EventTypes.PLAYER_JOINED:
+                    PlayerCount++;
                     PlayerSelections.Add(new CharacterSelectionData());
                     break;
             }
