@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
 
 namespace Common
 {
-    public class BoardCharacter
+    public class BoardCharacter: IStateEncodable
     {
         public enum FacingDirections: byte
         {
@@ -43,6 +44,33 @@ namespace Common
             LandedTileType = Tile.TileTypes.NONE;
             X = 0; Y = 0;
             Cash = 0;
+        }
+
+        public byte[] Encode()
+        {
+            var memory = new MemoryStream();
+            var writer = new BinaryWriter(memory);
+
+            writer.Write(X);
+            writer.Write(Y);
+            writer.Write(Cash);
+            writer.Write((byte)LandedTileType);
+            writer.Write((byte)Facing);
+
+            writer.Close();
+            memory.Close();
+            return memory.ToArray();
+        }
+
+        public void Decode(BinaryReader reader)
+        {
+            X = reader.ReadInt32();
+            Y = reader.ReadInt32();
+
+            Cash = reader.ReadInt32();
+
+            LandedTileType = (Tile.TileTypes)reader.ReadByte();
+            Facing = (FacingDirections)reader.ReadByte();
         }
     }
 }

@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
 namespace Common
 {
-    public class Board : IGameSubject, IGameObserver
+    public class Board : IGameSubject, IGameObserver, IStateEncodable
     {
         public enum BoardStates: byte
         {
@@ -196,6 +197,10 @@ namespace Common
                             break;
                     }
                     break;
+
+                case GameEvent.EventTypes.BOARD_ENCODE_REQUEST:
+                    Notify(new GameEvent(GameEvent.EventTypes.BOARD_ENCODE_RESPONSE, Encode()));
+                    break;
             }
         }
 
@@ -264,6 +269,60 @@ namespace Common
                     continue;
 
                 yield return direction;
+            }
+        }
+
+        public byte[] Encode()
+        {
+            var memory = new MemoryStream();
+            var writer = new BinaryWriter(memory);
+
+            writer.Write((short)TileMap.GetLength(0));
+            writer.Write((short)TileMap.GetLength(1));
+
+            for (var i = 0; i < TileMap.GetLength(0); i++)
+            {
+                for (var j = 0; j < TileMap.GetLength(1); j++)
+                {
+                    writer.Write(TileMap[i, j].Encode());
+                }
+            }
+
+            writer.Write((byte)Characters.Count);
+
+            for (var i = 0; i < Characters.Count; i++)
+            {
+                writer.Write(Characters[i].Encode());
+            }
+
+            writer.Close();
+            memory.Close();
+            return memory.ToArray();
+        }
+
+        public void Decode(BinaryReader reader)
+        {
+            var x = reader.ReadInt16();
+            var y = reader.ReadInt16();
+
+            TileMap = new Tile[x, y];
+
+            for (var i = 0; i < x; i++)
+            {
+                for (var j = 0; j < y; j++)
+                {
+                    TileMap[i, j] = new Tile(i, j, Tile.TileTypes.BLUE);
+                    TileMap[i, j].Decode(reader);
+                }
+            }
+
+            Characters.Clear();
+            var charactersCount = reader.ReadByte();
+            for (var i = 0; i < charactersCount; i++)
+            {
+                var characterAdd = new BoardCharacter();
+                characterAdd.Decode(reader);
+                Characters.Add(characterAdd);
             }
         }
     }

@@ -44,7 +44,7 @@ namespace Server
 
         private static void InputThread()
         {
-            DebugObserver.Notify(new GameEvent(GameEvent.EventTypes.PLAYER_JOINED, new byte[0] { }));
+            //DebugObserver.Notify(new GameEvent(GameEvent.EventTypes.PLAYER_JOINED, new byte[0] { }));
             Common.Events.GameInput inputEvent = new Common.Events.GameInput(0);
             while (true)
             {
@@ -88,14 +88,30 @@ namespace Server
             }
         }
 
+        private static Board board = new Board(new Tile[5, 5]);
+
         static void Main(string[] args)
         {
 
             DebugObserver = new DebugEventListener(); //Used for hand typed game events and logging events going through
 
-            var server = new GameServer(3000);
+            var server = new GameServer(500);
             var game = new Game();
             var characterSelection = new Common.GameStates.CharacterSelection();
+
+            for (var i = 0; i < board.TileMap.GetLength(0); i++)
+            {
+                for (var j = 0; j < board.TileMap.GetLength(1); j++)
+                {
+
+                    if (j != 0 && i % j == 0)
+                        board.TileMap[i, j] = new Tile(i, j, Tile.TileTypes.RED);
+                    else
+                    {
+                        board.TileMap[i, j] = new Tile(i, j, Tile.TileTypes.BLUE);
+                    }
+                }
+            }
 
             game.SetGameState(characterSelection);
 
@@ -106,18 +122,37 @@ namespace Server
 
             server.AddObserver(DebugObserver.HandleEvent);
             server.AddObserver(characterSelection.HandleEvent);
+            server.AddObserver(board.HandleEvent);
+            server.AddObserver(HandleEvent);
 
             DebugObserver.AddObserver(server.HandleEvent);
             DebugObserver.AddObserver(characterSelection.HandleEvent);
+            DebugObserver.AddObserver(board.HandleEvent);
+
+            board.AddObserver(DebugObserver.HandleEvent);
+            board.AddObserver(server.HandleEvent);
 
             server.Start();
 
-            //new Thread(new ThreadStart(InputThread)).Start();   //New thread for constant console input for manual events
+            new Thread(new ThreadStart(InputThread)).Start();   //New thread for constant console input for manual events
 
             for (; ; )
             {
-                game.Update(0);
+                board.Update();
+                //game.Update(0);
                 server.Update();
+
+                Thread.Sleep(1);
+            }
+        }
+
+        static void HandleEvent(GameEvent ev)
+        {
+            switch (ev.Type)
+            {
+                case GameEvent.EventTypes.PLAYER_JOINED:
+                    board.Characters.Add(new BoardCharacter());
+                    break;
             }
         }
     }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
 
 namespace Common
 {
@@ -11,6 +12,6 @@ namespace Common
     public interface IStateEncodable
     {
         byte[] Encode();
-        void Decode(byte[] data);
+        void Decode(BinaryReader reader);
     }
 }

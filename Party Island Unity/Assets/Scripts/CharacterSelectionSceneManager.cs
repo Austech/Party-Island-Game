@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using Common;
+using System.IO;
 
 public class CharacterSelectionSceneManager : MonoBehaviour, IGameSubject, IGameObserver
 {
@@ -73,7 +74,6 @@ public class CharacterSelectionSceneManager : MonoBehaviour, IGameSubject, IGame
                 PlayerPortraits[i].renderer.material.color = new Color(PlayerEmptyDarken, PlayerEmptyDarken, PlayerEmptyDarken);
             else
             {
-                Debug.Log(i + ": " + CharacterSelection.PlayerSelections[i].SelectionId);
                 switch (CharacterSelection.PlayerSelections[i].SelectionId)
                 {
                     case 0:
@@ -124,10 +124,11 @@ public class CharacterSelectionSceneManager : MonoBehaviour, IGameSubject, IGame
 
     public void HandleEvent(GameEvent ev)
     {
+        Debug.Log(ev.Type);
         switch (ev.Type)
         {
             case GameEvent.EventTypes.CHARACTERSELECT_ENCODE_RESPONSE:
-                CharacterSelection.Decode(ev.Data);
+                CharacterSelection.Decode(new BinaryReader(new MemoryStream(ev.Data)));
                 break;
             case GameEvent.EventTypes.PLAYER_ID_RESPONSE:
                 inputEvent.PlayerId = ev.Data[0];

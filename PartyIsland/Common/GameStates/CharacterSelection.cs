@@ -147,11 +147,9 @@ namespace Common.GameStates
             return memory.ToArray();
         }
 
-        public void Decode(byte[] data)
+        public void Decode(BinaryReader reader)
         {
             PlayerSelections.Clear();
-
-            var reader = new BinaryReader(new MemoryStream(data));
 
             PlayerCount = reader.ReadByte();
 
@@ -162,8 +160,6 @@ namespace Common.GameStates
                 newSelectionData.IsReady = reader.ReadBoolean();
                 PlayerSelections.Add(newSelectionData);
             }
-
-            reader.Close();
         }
     }
 }

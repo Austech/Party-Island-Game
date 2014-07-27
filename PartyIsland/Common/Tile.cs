@@ -6,9 +6,9 @@ using System.IO;
 
 namespace Common
 {
-    public class Tile
+    public class Tile: IStateEncodable
     {
-        public enum TileTypes
+        public enum TileTypes : byte
         {
             BLUE,
             RED,
@@ -98,6 +98,42 @@ namespace Common
             }
 
             return map;
+        }
+
+        public byte[] Encode()
+        {
+            var memory = new MemoryStream();
+            var writer = new BinaryWriter(memory);
+
+            writer.Write((byte)Type);
+            if(Forks != null)
+            {
+                writer.Write((byte)Forks.Length);
+                for (var i = 0; i < Forks.Length; i++)
+                {
+                    writer.Write((byte)Forks[i]);
+                }
+            }
+            else
+            {
+                writer.Write((byte)0);
+            }
+
+            writer.Close();
+            memory.Close();
+            return memory.ToArray();
+        }
+
+        public void Decode(BinaryReader reader)
+        {
+            Type = (TileTypes)reader.ReadByte();
+
+            var forkCount = (byte)reader.ReadByte();
+            Forks = new BoardCharacter.FacingDirections[forkCount];
+            for (var i = 0; i < forkCount; i++)
+            {
+                Forks[i] = (BoardCharacter.FacingDirections)reader.ReadByte();
+            }
         }
     }
 }
