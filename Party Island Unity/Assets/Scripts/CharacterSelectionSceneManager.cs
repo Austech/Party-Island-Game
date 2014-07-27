@@ -2,9 +2,8 @@
 using System.Collections;
 using Common;
 
-public class CharacterSelectionSceneManager : MonoBehaviour, EventReceiver{
-
-    public EventDispatcher EDispatcher;
+public class CharacterSelectionSceneManager : MonoBehaviour, IGameSubject, IGameObserver
+{
 
     private Common.Events.GameInput inputEvent;
 
@@ -15,21 +14,21 @@ public class CharacterSelectionSceneManager : MonoBehaviour, EventReceiver{
 
     public Common.GameStates.CharacterSelection CharacterSelection;
 
+    private event Common.NotificationDelegate observers;
+
 	// Use this for initialization
 	void Start () 
     {
-        CharacterSelection = new Common.GameStates.CharacterSelection();
+        PartyIsland.GlobalVariables.Initialize();
+        PartyIsland.GlobalVariables.Client.Connect("localhost", 1337);
 
+        CharacterSelection = new Common.GameStates.CharacterSelection();
         inputEvent = new Common.Events.GameInput(0);
 
-        EDispatcher = new EventDispatcher();
-        EDispatcher.RegisterReceiver(this);
-        EDispatcher.RegisterReceiver(CharacterSelection);
-        CharacterSelection.EDispatcher = EDispatcher;
-
-        PartyIsland.GlobalVariables.Initialize();
-        PartyIsland.GlobalVariables.Client.SetDispatcher(EDispatcher);
-        PartyIsland.GlobalVariables.Client.Connect("localhost", 1337);
+        PartyIsland.GlobalVariables.Client.AddObserver(CharacterSelection.HandleEvent);
+        PartyIsland.GlobalVariables.Client.AddObserver(HandleEvent);
+        AddObserver(CharacterSelection.HandleEvent);
+        AddObserver(PartyIsland.GlobalVariables.Client.HandleEvent);
 	}
 	
 	// Update is called once per frame
@@ -74,6 +73,7 @@ public class CharacterSelectionSceneManager : MonoBehaviour, EventReceiver{
                 PlayerPortraits[i].renderer.material.color = new Color(PlayerEmptyDarken, PlayerEmptyDarken, PlayerEmptyDarken);
             else
             {
+                Debug.Log(i + ": " + CharacterSelection.PlayerSelections[i].SelectionId);
                 switch (CharacterSelection.PlayerSelections[i].SelectionId)
                 {
                     case 0:
@@ -89,24 +89,49 @@ public class CharacterSelectionSceneManager : MonoBehaviour, EventReceiver{
                     case 3:
                         PlayerPortraits[i].renderer.material.color = new Color(0, 1, 0);
                         break;
+                    case 4:
+                        PlayerPortraits[i].renderer.material.color = new Color(0, 1, 1);
+                        break;
                 }
             }
         }
-
         PartyIsland.GlobalVariables.Client.Update();
 	}
-
-    public void HandleEvent(Common.Event ev)
-    {
-        if(ev.Data.Length > 0)
-        UnityEngine.Debug.Log(ev.Type + " " + ev.Data[0]);
-    }
 
     void ChangeInput(int id, bool value)
     {
         if (inputEvent.SetInput((Common.Events.GameInput.InputTypes)id, value))
         {
-            EDispatcher.Dispatch(inputEvent);
+            Notify(inputEvent);
+        }
+    }
+
+    public void AddObserver(NotificationDelegate callback)
+    {
+        observers += callback;
+    }
+
+    public void RemoveObserver(NotificationDelegate callback)
+    {
+        observers -= callback;
+    }
+
+    public void Notify(GameEvent ge)
+    {
+        if(observers != null)
+            observers(ge);
+    }
+
+    public void HandleEvent(GameEvent ev)
+    {
+        switch (ev.Type)
+        {
+            case GameEvent.EventTypes.CHARACTERSELECT_ENCODE_RESPONSE:
+                CharacterSelection.Decode(ev.Data);
+                break;
+            case GameEvent.EventTypes.PLAYER_ID_RESPONSE:
+                inputEvent.PlayerId = ev.Data[0];
+                break;
         }
     }
 }

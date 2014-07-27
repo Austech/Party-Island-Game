@@ -10,7 +10,6 @@ namespace Server
 {
     class Program
     {
-        public static Dictionary<string, IGameSubject> Subjects;
         private static DebugEventListener DebugObserver;
 
         public class DebugEventListener: IGameObserver, IGameSubject
@@ -26,12 +25,12 @@ namespace Server
                 Console.WriteLine("EVENT: " + ev.Type + "; " + BitConverter.ToString(ev.Data));
             }
 
-            public void Subscribe(NotificationDelegate callback)
+            public void AddObserver(NotificationDelegate callback)
             {
                 observers += callback;
             }
 
-            public void Unsubscribe(NotificationDelegate callback)
+            public void RemoveObserver(NotificationDelegate callback)
             {
                 observers -= callback;
             }
@@ -91,27 +90,34 @@ namespace Server
 
         static void Main(string[] args)
         {
-            Subjects = new Dictionary<string, IGameSubject>();
+
+            DebugObserver = new DebugEventListener(); //Used for hand typed game events and logging events going through
+
+            var server = new GameServer(3000);
+            var game = new Game();
+            var characterSelection = new Common.GameStates.CharacterSelection();
+
+            game.SetGameState(characterSelection);
 
 
-            DebugObserver = new DebugEventListener();
+            //In this  example, all observers/subjects listen to eachother.
+            characterSelection.AddObserver(DebugObserver.HandleEvent);
+            characterSelection.AddObserver(server.HandleEvent);
 
-            Board board = new Board(Tile.TileMapFromStream(new StreamReader(File.OpenRead("testmap.txt"))));
-            board.Characters.Add(new BoardCharacter());
-            board.Characters[0].Facing = BoardCharacter.FacingDirections.DOWN;
+            server.AddObserver(DebugObserver.HandleEvent);
+            server.AddObserver(characterSelection.HandleEvent);
 
-            Subjects.Add("Board", board);
-            Subjects.Add("Debugger", DebugObserver);
+            DebugObserver.AddObserver(server.HandleEvent);
+            DebugObserver.AddObserver(characterSelection.HandleEvent);
 
-            Subjects["Board"].Subscribe(DebugObserver.HandleEvent);
-            Subjects["Debugger"].Subscribe(board.HandleEvent);
-            Subjects["Debugger"].Subscribe(DebugObserver.HandleEvent);
+            server.Start();
 
-            new Thread(new ThreadStart(InputThread)).Start();
+            //new Thread(new ThreadStart(InputThread)).Start();   //New thread for constant console input for manual events
 
             for (; ; )
             {
-                board.Update();
+                game.Update(0);
+                server.Update();
             }
         }
     }

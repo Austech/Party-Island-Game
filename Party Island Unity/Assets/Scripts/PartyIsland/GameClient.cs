@@ -7,14 +7,11 @@ using Lidgren.Network;
 
 namespace PartyIsland
 {
-    public class GameClient : EventReceiver
+    public class GameClient : IGameObserver, IGameSubject
     {
         NetClient client;
-        public EventDispatcher EDispatcher
-        {
-            get;
-            private set;
-        }
+
+        private event Common.NotificationDelegate observers;
 
         public GameClient()
         {
@@ -25,12 +22,6 @@ namespace PartyIsland
         {
             client.Start();
             client.Connect(ip, port);
-        }
-
-        public void SetDispatcher(EventDispatcher edispatcher)
-        {
-            EDispatcher = edispatcher;
-            EDispatcher.RegisterReceiver(this);
         }
 
         public void Update()
@@ -44,13 +35,13 @@ namespace PartyIsland
                         var eventFromMessage = EventFromMessage(msg);
                         if (eventFromMessage != null)
                         {
-                            if (eventFromMessage.Type == Event.EventTypes.INPUT)
+                            if (eventFromMessage.Type == GameEvent.EventTypes.INPUT)
                             {
-                                EDispatcher.Dispatch(Event.GetDetailedEvent<Common.Events.GameInput>(eventFromMessage));
+                                Notify(GameEvent.GetDetailedEvent<Common.Events.GameInput>(eventFromMessage));
                             }
                             else
                             {
-                                EDispatcher.Dispatch(eventFromMessage);
+                                Notify(eventFromMessage);
                             }
                         }
                         break;
@@ -58,11 +49,27 @@ namespace PartyIsland
             }
         }
 
-        public void HandleEvent(Event ev)
+        public void AddObserver(NotificationDelegate callback)
+        {
+            observers += callback;
+        }
+
+        public void RemoveObserver(NotificationDelegate callback)
+        {
+            observers -= callback;
+        }
+
+        public void Notify(GameEvent ge)
+        {
+            if (observers != null)
+                observers(ge);
+        }
+
+        public void HandleEvent(GameEvent ev)
         {
             switch (ev.Type)
             {
-                case Event.EventTypes.INPUT:
+                case GameEvent.EventTypes.INPUT:
                     if (ev.Sender == "Network")  //Dont send inputs from the network back to the network
                         break;
 
@@ -73,15 +80,15 @@ namespace PartyIsland
             }
         }
 
-        private Event EventFromMessage(NetIncomingMessage msg)
+        private GameEvent EventFromMessage(NetIncomingMessage msg)
         {
-            Event.EventTypes type = (Event.EventTypes)msg.ReadByte();
+            GameEvent.EventTypes type = (GameEvent.EventTypes)msg.ReadByte();
             var data = msg.ReadBytes(msg.LengthBytes - 1);
 
-            return new Event(type, data, "Network");
+            return new GameEvent(type, data, "Network");
         }
 
-        private NetOutgoingMessage MessageFromEvent(Event ev)
+        private NetOutgoingMessage MessageFromEvent(GameEvent ev)
         {
             NetOutgoingMessage msg = client.CreateMessage();
             msg.Write((byte)ev.Type);

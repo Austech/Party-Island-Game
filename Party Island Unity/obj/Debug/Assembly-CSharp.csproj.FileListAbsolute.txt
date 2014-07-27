@@ -1,0 +1,13 @@
+C:\Users\Austin\Documents\GitHub\Party-Island-Game\Party Island Unity\Temp\bin\Debug\Assembly-CSharp.dll
+C:\Users\Austin\Documents\GitHub\Party-Island-Game\Party Island Unity\Temp\bin\Debug\Assembly-CSharp.pdb
+C:\Users\Austin\Documents\GitHub\Party-Island-Game\Party Island Unity\Temp\bin\Debug\Common.dll
+C:\Users\Austin\Documents\GitHub\Party-Island-Game\Party Island Unity\Temp\bin\Debug\Lidgren.Network.dll
+C:\Users\Austin\Documents\GitHub\Party-Island-Game\Party Island Unity\Temp\bin\Debug\UnityEditor.dll
+C:\Users\Austin\Documents\GitHub\Party-Island-Game\Party Island Unity\Temp\bin\Debug\UnityEngine.dll
+C:\Users\Austin\Documents\GitHub\Party-Island-Game\Party Island Unity\Temp\bin\Debug\Mono.Cecil.dll
+C:\Users\Austin\Documents\GitHub\Party-Island-Game\Party Island Unity\Temp\bin\Debug\nunit.framework.dll
+C:\Users\Austin\Documents\GitHub\Party-Island-Game\Party Island Unity\Temp\bin\Debug\Unity.DataContract.dll
+C:\Users\Austin\Documents\GitHub\Party-Island-Game\Party Island Unity\Temp\bin\Debug\ICSharpCode.NRefactory.dll
+C:\Users\Austin\Documents\GitHub\Party-Island-Game\Party Island Unity\obj\Debug\Assembly-CSharp.csprojResolveAssemblyReference.cache
+C:\Users\Austin\Documents\GitHub\Party-Island-Game\Party Island Unity\obj\Debug\Assembly-CSharp.dll
+C:\Users\Austin\Documents\GitHub\Party-Island-Game\Party Island Unity\obj\Debug\Assembly-CSharp.pdb

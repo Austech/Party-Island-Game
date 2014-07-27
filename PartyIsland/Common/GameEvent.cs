@@ -29,10 +29,26 @@ namespace Common
             /// </summary>
             PLAYER_COUNT,
 
+
+            /// <summary>
+            /// 1 byte representing the unique id of the player
+            /// </summary>
+            PLAYER_ID_RESPONSE,
+
             /// <summary>
             /// 1 byte determining the minigame id (0-255)
             /// </summary>
             MINIGAME_SELECTED,
+
+            /// <summary>
+            /// Request for a Character Selection data encoding
+            /// </summary>
+            CHARACTERSELECT_ENCODE_REQUEST,
+
+            /// <summary>
+            /// Character Selection object encoded into a byte array. Encoding data is stored into Event.Data
+            /// </summary>
+            CHARACTERSELECT_ENCODE_RESPONSE,
 
             /// <summary>
             /// 1 byte representing the new selection
@@ -43,6 +59,16 @@ namespace Common
             /// 1 byte representing the new selection
             /// </summary>
             CHARACTERSELECT_PLAYER_CONFIRMED_SELECTION,
+
+            /// <summary>
+            /// Request for a board data encoding
+            /// </summary>
+            BOARD_ENCODE_REQUEST,
+
+            /// <summary>
+            /// Board object encoded into a byte array. Encoding data is stored into Event.Data
+            /// </summary>
+            BOARD_ENCODE_RESPONSE,
 
             /// <summary>
             ///Contains 3 bytes of data

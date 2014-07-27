@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Common;
 using Lidgren.Network;
+using System.Diagnostics;
 
 namespace Server
 {
@@ -19,8 +20,23 @@ namespace Server
 
         private event Common.NotificationDelegate observers;
 
-        public GameServer()
+        /// <summary>
+        /// Milliseconds until next tick.
+        /// The server sends 'snapshots' of key elements of the game every tick.
+        /// </summary>
+        public int TickRate
         {
+            get;
+            set;
+        }
+
+        Stopwatch tickWatch;
+
+        public GameServer(int tickrate)
+        {
+            TickRate = tickrate;
+            tickWatch = new Stopwatch();
+
             NetPeerConfiguration config = new NetPeerConfiguration("PARTY_ISLAND");
             config.Port = 1337;
             server = new NetServer(config);
@@ -30,6 +46,7 @@ namespace Server
 
         public void Start()
         {
+            tickWatch.Start();
             server.Start();
         }
 
@@ -75,6 +92,8 @@ namespace Server
                                 connectedIds.Add(uniqueId);
                                 msg.SenderConnection.Tag = uniqueId;
 
+                                server.SendMessage(MessageFromEvent(new GameEvent(GameEvent.EventTypes.PLAYER_ID_RESPONSE, new byte[1] { (byte)uniqueId })), msg.SenderConnection, NetDeliveryMethod.ReliableOrdered);
+
                                 Notify(new GameEvent(GameEvent.EventTypes.PLAYER_COUNT, new byte[1] { (byte)connectedIds.Count }));
                                 break;
                             case NetConnectionStatus.Disconnected:
@@ -95,31 +114,37 @@ namespace Server
                                 inputEvent.UpdateByteArray();
                                 Notify(inputEvent);
                             }
-                            else if(incomingEvent.Sender != "Network")
-                            {
-                                Notify(incomingEvent);
-                            }
                         }
                         break;
                     default:
                         break;
                 }
             }
+
+            if (tickWatch.ElapsedMilliseconds >= TickRate)
+            {
+                tickWatch.Reset();
+                tickWatch.Start();
+
+                Notify(new GameEvent(GameEvent.EventTypes.CHARACTERSELECT_ENCODE_REQUEST, new byte[0]));
+                Notify(new GameEvent(GameEvent.EventTypes.BOARD_ENCODE_REQUEST, new byte[0]));
+            }
         }
 
-        public void Subscribe(NotificationDelegate callback)
+        public void AddObserver(NotificationDelegate callback)
         {
             observers += callback;
         }
 
-        public void Unsubscribe(NotificationDelegate callback)
+        public void RemoveObserver(NotificationDelegate callback)
         {
             observers -= callback;
         }
 
         public void Notify(GameEvent ge)
         {
-            observers(ge);
+            if(observers != null)
+                observers(ge);
         }
 
         public void HandleEvent(GameEvent ev)

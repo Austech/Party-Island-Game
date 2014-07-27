@@ -129,12 +129,12 @@ namespace Common
             }
         }
 
-        public void Subscribe(NotificationDelegate callback)
+        public void AddObserver(NotificationDelegate callback)
         {
             observers += callback;
         }
 
-        public void Unsubscribe(NotificationDelegate callback)
+        public void RemoveObserver(NotificationDelegate callback)
         {
             observers -= callback;
         }

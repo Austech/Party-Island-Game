@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -8,7 +9,7 @@ namespace Common.GameStates
     /// <summary>
     /// State for handling players selecting the character they want to choose
     /// </summary>
-    public class CharacterSelection : GameState, IGameSubject, IGameObserver
+    public class CharacterSelection : GameState, IGameSubject, IGameObserver, IStateEncodable
     {
         public class CharacterSelectionData
         {
@@ -25,13 +26,13 @@ namespace Common.GameStates
         public List<CharacterSelectionData> PlayerSelections;
         public static int MaxSelectionOptions = 5;  //Max Available Characters to select
 
-        public int PlayerCount
+        public byte PlayerCount
         {
             get;
             private set;
         }
 
-        private Common.NotificationDelegate observers;
+        private event Common.NotificationDelegate observers;
 
         public CharacterSelection()
         {
@@ -74,19 +75,20 @@ namespace Common.GameStates
             Notify(new GameEvent(GameEvent.EventTypes.CHARACTERSELECT_PLAYER_CHANGED_SELECTION, new byte[1]{(byte)player.SelectionId}));
         }
 
-        public void Subscribe(NotificationDelegate callback)
+        public void AddObserver(NotificationDelegate callback)
         {
             observers += callback;
         }
 
-        public void Unsubscribe(NotificationDelegate callback)
+        public void RemoveObserver(NotificationDelegate callback)
         {
             observers -= callback;
         }
 
         public void Notify(GameEvent ge)
         {
-            observers(ge);
+            if(observers != null)
+                observers(ge);
         }
 
         public void HandleEvent(GameEvent ev)
@@ -95,10 +97,12 @@ namespace Common.GameStates
             {
                 case GameEvent.EventTypes.INPUT:
                     var inputEvent = (Events.GameInput)ev;
-                    var playerSelection = PlayerSelections[inputEvent.PlayerId];
 
                     if (inputEvent.PlayerId >= PlayerSelections.Count)
                         break;
+
+                    var playerSelection = PlayerSelections[inputEvent.PlayerId];
+
                     if (inputEvent.GetInput(Events.GameInput.InputTypes.PRIMARY))
                     {
                         if (!IsSelected(playerSelection.SelectionId))
@@ -120,7 +124,46 @@ namespace Common.GameStates
                     PlayerCount++;
                     PlayerSelections.Add(new CharacterSelectionData());
                     break;
+                case GameEvent.EventTypes.CHARACTERSELECT_ENCODE_REQUEST:
+                    Notify(new GameEvent(GameEvent.EventTypes.CHARACTERSELECT_ENCODE_RESPONSE, Encode()));
+                    break;
             }
+        }
+
+        public byte[] Encode()
+        {
+            var memory = new MemoryStream();
+            var writer = new BinaryWriter(memory);
+
+            writer.Write((byte)PlayerSelections.Count);
+            for (var i = 0; i < PlayerSelections.Count; i++)
+            {
+                writer.Write((byte)PlayerSelections[i].SelectionId);
+                writer.Write(PlayerSelections[i].IsReady);
+            }
+
+            writer.Close();
+            memory.Close();
+            return memory.ToArray();
+        }
+
+        public void Decode(byte[] data)
+        {
+            PlayerSelections.Clear();
+
+            var reader = new BinaryReader(new MemoryStream(data));
+
+            PlayerCount = reader.ReadByte();
+
+            for (var i = 0; i < PlayerCount; i++)
+            {
+                var newSelectionData = new CharacterSelectionData();
+                newSelectionData.SelectionId = reader.ReadByte();
+                newSelectionData.IsReady = reader.ReadBoolean();
+                PlayerSelections.Add(newSelectionData);
+            }
+
+            reader.Close();
         }
     }
 }

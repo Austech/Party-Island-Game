@@ -8,8 +8,8 @@ namespace Common
     public delegate void NotificationDelegate(GameEvent ge);
     public interface IGameSubject
     {
-        void Subscribe(NotificationDelegate callback);
-        void Unsubscribe(NotificationDelegate callback);
+        void AddObserver(NotificationDelegate callback);
+        void RemoveObserver(NotificationDelegate callback);
 
         void Notify(GameEvent ge);
     }
