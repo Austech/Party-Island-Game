@@ -1,0 +1,13 @@
+C:\Users\Austin\Documents\Unity Projects\Party Island\Temp\bin\Debug\Assembly-CSharp.dll
+C:\Users\Austin\Documents\Unity Projects\Party Island\Temp\bin\Debug\Assembly-CSharp.pdb
+C:\Users\Austin\Documents\Unity Projects\Party Island\Temp\bin\Debug\Common.dll
+C:\Users\Austin\Documents\Unity Projects\Party Island\Temp\bin\Debug\Lidgren.Network.dll
+C:\Users\Austin\Documents\Unity Projects\Party Island\Temp\bin\Debug\UnityEditor.dll
+C:\Users\Austin\Documents\Unity Projects\Party Island\Temp\bin\Debug\UnityEngine.dll
+C:\Users\Austin\Documents\Unity Projects\Party Island\Temp\bin\Debug\Mono.Cecil.dll
+C:\Users\Austin\Documents\Unity Projects\Party Island\Temp\bin\Debug\nunit.framework.dll
+C:\Users\Austin\Documents\Unity Projects\Party Island\Temp\bin\Debug\Unity.DataContract.dll
+C:\Users\Austin\Documents\Unity Projects\Party Island\Temp\bin\Debug\ICSharpCode.NRefactory.dll
+C:\Users\Austin\Documents\Unity Projects\Party Island\obj\Debug\Assembly-CSharp-vs.csprojResolveAssemblyReference.cache
+C:\Users\Austin\Documents\Unity Projects\Party Island\obj\Debug\Assembly-CSharp.dll
+C:\Users\Austin\Documents\Unity Projects\Party Island\obj\Debug\Assembly-CSharp.pdb

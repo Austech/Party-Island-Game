@@ -1,0 +1,5 @@
+C:\Users\Austin\Documents\Visual Studio 2013\Projects\PartyIsland\Common\bin\Debug\Common.dll
+C:\Users\Austin\Documents\Visual Studio 2013\Projects\PartyIsland\Common\bin\Debug\Common.pdb
+C:\Users\Austin\Documents\Visual Studio 2013\Projects\PartyIsland\Common\obj\Debug\Common.dll
+C:\Users\Austin\Documents\Visual Studio 2013\Projects\PartyIsland\Common\obj\Debug\Common.pdb
+C:\Users\Austin\Documents\Visual Studio 2013\Projects\PartyIsland\Common\obj\Debug\Common.csprojResolveAssemblyReference.cache
