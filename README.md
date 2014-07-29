@@ -17,6 +17,11 @@ The code around the game consists of a few main parts:
 * __Game Events__ for communication between game objects. For example, when a user presses the "W" key, the input system parses this and throws an INPUT_EVENT to any systems listening.
 * __Game State Encoding__ for parsing and wrapping up a game system or state into a byte array. This is mainly used when sending states over a network to be parsed by clients, as well as game saving.
 
+##Events
+This game heavily uses event based events. Much like the description above, almost anything notable is an event, from player input to game specific changes. This allows for easy decoupling, and using the Observer Pattern, is easy to receive/filter the events you want.
+
+If you're interested in the types of events, check out [The GameEvent.cs file](https://github.com/Austech/Party-Island-Game/blob/master/PartyIsland/Common/GameEvent.cs)
+
 ##Networking Design
 Because of the nature of the game, it's important for network code to be as flexible as possible for mini-games. The network flow works similar to source or quake, but here's some specifics:
 
