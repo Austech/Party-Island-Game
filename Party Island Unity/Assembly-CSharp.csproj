@@ -50,8 +50,11 @@
      <Compile Include="Assets\Scripts\BoardSceneScript.cs" />
      <Compile Include="Assets\Scripts\CharacterSelectionSceneManager.cs" />
      <Compile Include="Assets\Scripts\DiceScript.cs" />
+     <Compile Include="Assets\Scripts\InputSubject.cs" />
+     <Compile Include="Assets\Scripts\MultiplayerModeSubject.cs" />
      <Compile Include="Assets\Scripts\PartyIsland\GameClient.cs" />
      <Compile Include="Assets\Scripts\PartyIsland\GlobalVariables.cs" />
+     <Compile Include="Assets\Scripts\PlayMode.cs" />
      <Compile Include="Assets\Scripts\TileScript.cs" />
  <Reference Include="Common">
  <HintPath>C:/Users/Austin/Documents/GitHub/Party-Island-Game/Party Island Unity/Assets/Common.dll</HintPath>

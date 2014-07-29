@@ -2,6 +2,7 @@
 using System.Collections;
 using Common;
 using System.IO;
+using Assets.Scripts;
 
 public class BoardSceneScript : MonoBehaviour, IGameObserver, IGameSubject
 {
@@ -17,38 +18,29 @@ public class BoardSceneScript : MonoBehaviour, IGameObserver, IGameSubject
     private GameObject[] characterObjects;
     private GameObject diceObject;
 
+    private InputSubject inputSubject;
+
     private event NotificationDelegate observers;
+
+    private Assets.Scripts.PlayMode playMode;
 
     // Use this for initialization
     void Start()
     {
-        board = new Board(new Tile[10, 10]);
-        for (var i = 0; i < board.TileMap.GetLength(0); i++)
-        {
-            for (var j = 0; j < board.TileMap.GetLength(1); j++)
-            {
-                board.TileMap[i, j] = new Tile(i, j, Tile.TileTypes.BLUE);
-                if (i % 3 == 0 && j % 3 == 0)
-                {
-                    board.TileMap[i, j].Type = Tile.TileTypes.SPECIAL;
-                }
-                else if (i % 3 == 0)
-                {
-                    board.TileMap[i, j].Type = Tile.TileTypes.RED;
-                }
-            }
-        }
-        board.Characters.Add(new BoardCharacter());
-        board.Characters[0].X = 1;
-        board.Characters[0].Y = 2;
+        inputSubject = new InputSubject();
+        board = new Board(new Tile[0, 0]);
 
-        board.AddObserver(HandleEvent);
-        board.HandleEvent(new GameEvent(GameEvent.EventTypes.BOARD_ENCODE_REQUEST, new byte[0]));
+        playMode = new MultiplayerModeSubject("localhost", 1337);
+        playMode.AddObserver(HandleEvent);
+
+        inputSubject.AddObserver(playMode.HandleEvent);
     }
 
     // Update is called once per frame
     void Update()
     {
+        inputSubject.Update();
+
         //Set board character positions
         if (characterObjects != null)
         {
@@ -71,6 +63,22 @@ public class BoardSceneScript : MonoBehaviour, IGameObserver, IGameSubject
                     diceObject.transform.localPosition = characterObjects[board.CurrentPlayer].transform.localPosition + new Vector3(0, 1, 0);
 
                 break;
+        }
+
+        if (board.State != Board.BoardStates.WAITING_FOR_ROLL)
+        {
+            if (diceObject != null)
+            {
+                DestroyObject(diceObject);
+                diceObject = null;
+            }
+        }
+
+        board.Update();
+
+        if (playMode != null)
+        {
+            playMode.Update();
         }
     }
 
@@ -112,9 +120,21 @@ public class BoardSceneScript : MonoBehaviour, IGameObserver, IGameSubject
         }
     }
 
+    private void RollDice()
+    {
+        //Destroy the dice object
+        if (diceObject != null)
+        {
+            DestroyObject(diceObject);
+            diceObject = null;
+        }
+
+        //Make effects and play sounds here
+
+    }
+
     public void HandleEvent(GameEvent ev)
     {
-        //Debug.Log(ev.Type);
         switch (ev.Type)
         {
             case GameEvent.EventTypes.BOARD_ENCODE_RESPONSE:
@@ -124,6 +144,14 @@ public class BoardSceneScript : MonoBehaviour, IGameObserver, IGameSubject
                 {
                     LoadBoardObjects();
                 }
+                break;
+
+            case GameEvent.EventTypes.BOARD_PLAYER_ROLLED:
+                RollDice();
+                break;
+
+            case GameEvent.EventTypes.PLAYER_ID_RESPONSE:
+                inputSubject.SetPlayerId(ev.Data[0]);
                 break;
         }
     }

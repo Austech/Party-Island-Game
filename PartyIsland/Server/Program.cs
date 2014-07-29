@@ -142,7 +142,7 @@ namespace Server
                 //game.Update(0);
                 server.Update();
 
-                Thread.Sleep(500);
+                Thread.Sleep(5);
             }
         }
 
