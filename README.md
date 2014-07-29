@@ -3,6 +3,8 @@ Party-Island-Game
 #What
 Party Island is a PC party game where players play mini-games for points and move around a map.
 
+__Please note this game is currently early in progress, making the gameplay and code architecture subject to change!__
+
 ##What this repository contains
 This repository contains 3 main projects for the game:
 
