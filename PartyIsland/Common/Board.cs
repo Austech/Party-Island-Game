@@ -277,6 +277,10 @@ namespace Common
             var memory = new MemoryStream();
             var writer = new BinaryWriter(memory);
 
+            writer.Write((byte)State);
+            writer.Write(CurrentPlayer);
+            writer.Write(RollValue);
+
             writer.Write((short)TileMap.GetLength(0));
             writer.Write((short)TileMap.GetLength(1));
 
@@ -295,6 +299,8 @@ namespace Common
                 writer.Write(Characters[i].Encode());
             }
 
+            
+
             writer.Close();
             memory.Close();
             return memory.ToArray();
@@ -302,6 +308,10 @@ namespace Common
 
         public void Decode(BinaryReader reader)
         {
+            State = (BoardStates)reader.ReadByte();
+            CurrentPlayer = reader.ReadByte();
+            RollValue = reader.ReadInt32();
+
             var x = reader.ReadInt16();
             var y = reader.ReadInt16();
 
