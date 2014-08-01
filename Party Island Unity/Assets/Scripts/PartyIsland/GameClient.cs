@@ -11,11 +11,12 @@ namespace PartyIsland
     {
         NetClient client;
 
-        private event Common.NotificationDelegate observers;
+        DefaultGameSubject defaultGameSubject;
 
         public GameClient()
         {
             client = new NetClient(new NetPeerConfiguration("PARTY_ISLAND"));
+            defaultGameSubject = new DefaultGameSubject();
         }
 
         public void Connect(String ip, int port)
@@ -51,18 +52,17 @@ namespace PartyIsland
 
         public void AddObserver(NotificationDelegate callback)
         {
-            observers += callback;
+            defaultGameSubject.AddObserver(callback);
         }
 
         public void RemoveObserver(NotificationDelegate callback)
         {
-            observers -= callback;
+            defaultGameSubject.RemoveObserver(callback);
         }
 
         public void Notify(GameEvent ge)
         {
-            if (observers != null)
-                observers(ge);
+            defaultGameSubject.Notify(ge);
         }
 
         public void HandleEvent(GameEvent ev)

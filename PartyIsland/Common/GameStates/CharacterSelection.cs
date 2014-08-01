@@ -32,10 +32,12 @@ namespace Common.GameStates
             private set;
         }
 
-        private event Common.NotificationDelegate observers;
+        private DefaultGameSubject defaultGameSubject;
 
         public CharacterSelection()
         {
+            defaultGameSubject = new DefaultGameSubject();
+
             PlayerCount = 0;
 
             PlayerSelections = new List<CharacterSelectionData>();
@@ -77,18 +79,17 @@ namespace Common.GameStates
 
         public void AddObserver(NotificationDelegate callback)
         {
-            observers += callback;
+            defaultGameSubject.AddObserver(callback);
         }
 
         public void RemoveObserver(NotificationDelegate callback)
         {
-            observers -= callback;
+            defaultGameSubject.RemoveObserver(callback);
         }
 
         public void Notify(GameEvent ge)
         {
-            if(observers != null)
-                observers(ge);
+            defaultGameSubject.Notify(ge);
         }
 
         public void HandleEvent(GameEvent ev)

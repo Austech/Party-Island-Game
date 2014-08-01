@@ -18,7 +18,7 @@ namespace Server
         /// </summary>
         private List<int> connectedIds; //used ids for connected clients
 
-        private event Common.NotificationDelegate observers;
+        private DefaultGameSubject defaultGameSubject;
 
         /// <summary>
         /// Milliseconds until next tick.
@@ -34,6 +34,8 @@ namespace Server
 
         public GameServer(int tickrate)
         {
+            defaultGameSubject = new DefaultGameSubject();
+
             TickRate = tickrate;
             tickWatch = new Stopwatch();
 
@@ -133,18 +135,17 @@ namespace Server
 
         public void AddObserver(NotificationDelegate callback)
         {
-            observers += callback;
+            defaultGameSubject.AddObserver(callback);
         }
 
         public void RemoveObserver(NotificationDelegate callback)
         {
-            observers -= callback;
+            defaultGameSubject.RemoveObserver(callback);
         }
 
         public void Notify(GameEvent ge)
         {
-            if(observers != null)
-                observers(ge);
+            defaultGameSubject.Notify(ge);
         }
 
         public void HandleEvent(GameEvent ev)

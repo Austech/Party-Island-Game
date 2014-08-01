@@ -41,10 +41,11 @@ namespace Common
 
         public BoardCharacter.FacingDirections ChosenDirection; //direction the character is choosing for forks
 
-        private event Common.NotificationDelegate observers;
+        private DefaultGameSubject defaultGameSubject;
 
         public Board(Tile[,] map)
         {
+            defaultGameSubject = new DefaultGameSubject();
 
             ChosenDirection = BoardCharacter.FacingDirections.UP;
 
@@ -132,17 +133,17 @@ namespace Common
 
         public void AddObserver(NotificationDelegate callback)
         {
-            observers += callback;
+            defaultGameSubject.AddObserver(callback);
         }
 
         public void RemoveObserver(NotificationDelegate callback)
         {
-            observers -= callback;
+            defaultGameSubject.RemoveObserver(callback);
         }
 
         public void Notify(GameEvent ge)
         {
-            observers(ge);
+            defaultGameSubject.Notify(ge);
         }
 
         public void HandleEvent(GameEvent ev)

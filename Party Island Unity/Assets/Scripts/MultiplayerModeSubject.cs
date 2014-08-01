@@ -8,7 +8,6 @@ namespace Assets.Scripts
 {
     public class MultiplayerModeSubject: PlayMode
     {
-        private event Common.NotificationDelegate observers;
         private Common.Events.GameInput inputEvent;
 
         public MultiplayerModeSubject(string ip, int port)
@@ -29,8 +28,7 @@ namespace Assets.Scripts
 
         public override void Notify(GameEvent ge)
         {
-            if (observers != null)
-                observers(ge);
+            PartyIsland.GlobalVariables.Client.Notify(ge);
         }
 
         public override void HandleEvent(GameEvent ge)

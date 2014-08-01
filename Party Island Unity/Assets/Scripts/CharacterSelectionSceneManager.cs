@@ -15,11 +15,13 @@ public class CharacterSelectionSceneManager : MonoBehaviour, IGameSubject, IGame
 
     public Common.GameStates.CharacterSelection CharacterSelection;
 
-    private event Common.NotificationDelegate observers;
+    private DefaultGameSubject defaultGameObject;
 
 	// Use this for initialization
 	void Start () 
     {
+        defaultGameObject = new DefaultGameSubject();
+
         PartyIsland.GlobalVariables.Initialize();
         PartyIsland.GlobalVariables.Client.Connect("localhost", 1337);
 
@@ -108,18 +110,17 @@ public class CharacterSelectionSceneManager : MonoBehaviour, IGameSubject, IGame
 
     public void AddObserver(NotificationDelegate callback)
     {
-        observers += callback;
+        defaultGameObject.AddObserver(callback);
     }
 
     public void RemoveObserver(NotificationDelegate callback)
     {
-        observers -= callback;
+        defaultGameObject.RemoveObserver(callback);
     }
 
     public void Notify(GameEvent ge)
     {
-        if(observers != null)
-            observers(ge);
+        defaultGameObject.Notify(ge);
     }
 
     public void HandleEvent(GameEvent ev)

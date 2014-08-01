@@ -20,13 +20,15 @@ public class BoardSceneScript : MonoBehaviour, IGameObserver, IGameSubject
 
     private InputSubject inputSubject;
 
-    private event NotificationDelegate observers;
+    private DefaultGameSubject defaultGameObject;
 
     private Assets.Scripts.PlayMode playMode;
 
     // Use this for initialization
     void Start()
     {
+        defaultGameObject = new DefaultGameSubject();
+
         inputSubject = new InputSubject();
         board = new Board(new Tile[0, 0]);
 
@@ -85,18 +87,17 @@ public class BoardSceneScript : MonoBehaviour, IGameObserver, IGameSubject
 
     public void AddObserver(NotificationDelegate callback)
     {
-        observers += callback;
+        defaultGameObject.AddObserver(callback);
     }
 
     public void RemoveObserver(NotificationDelegate callback)
     {
-        observers -= callback;
+        defaultGameObject.RemoveObserver(callback);
     }
 
     public void Notify(GameEvent ge)
     {
-        if (observers != null)
-            observers(ge);
+        defaultGameObject.Notify(ge);
     }
 
     private void LoadBoardObjects()

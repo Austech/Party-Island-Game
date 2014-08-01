@@ -9,28 +9,29 @@ namespace Assets.Scripts
 {
     public class InputSubject: IGameSubject
     {
-        private event Common.NotificationDelegate observers;
+        private DefaultGameSubject defaultGameSubject;
+
         private Common.Events.GameInput inputEvent;
+
+        public InputSubject()
+        {
+            defaultGameSubject = new DefaultGameSubject();
+            inputEvent = new Common.Events.GameInput(0);
+        }
 
         public void AddObserver(NotificationDelegate callback)
         {
-            observers += callback;
+            defaultGameSubject.AddObserver(callback);
         }
 
         public void RemoveObserver(NotificationDelegate callback)
         {
-            observers -= callback;
+            defaultGameSubject.RemoveObserver(callback);
         }
 
         public void Notify(GameEvent ge)
         {
-            if (observers != null)
-                observers(ge);
-        }
-
-        public InputSubject()
-        {
-            inputEvent = new Common.Events.GameInput(0);
+            defaultGameSubject.Notify(ge);
         }
 
         public void SetPlayerId(byte id)
