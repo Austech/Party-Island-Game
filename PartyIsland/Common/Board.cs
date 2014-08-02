@@ -21,29 +21,18 @@ namespace Common
         }
 
         public BoardStates State;
-
-        public byte CurrentPlayer
-        {
-            get;
-            private set;
-        }
-        public int RollValue
-        {
-            get;
-            private set;
-        }
-
+        public byte CurrentPlayer { get; private set; }
+        public int RollValue { get; private set; }
         public List<BoardCharacter> Characters;
-
-        private Random random;  //used for rolling and choosing minigames
-
         public Tile[,] TileMap;
-
         public BoardCharacter.FacingDirections ChosenDirection; //direction the character is choosing for forks
+        public int CharacterMoveDelay; //Time in milliseconds it takes for each tile movement
 
         private DefaultGameSubject defaultGameSubject;
+        private Random random;  //used for rolling and choosing minigames
+        private int timeCounter;
 
-        public Board(Tile[,] map)
+        public Board(Tile[,] map, int playermovedelay = 200)
         {
             defaultGameSubject = new DefaultGameSubject();
 
@@ -55,10 +44,16 @@ namespace Common
             Characters = new List<BoardCharacter>();
             TileMap = map;
             random = new Random();
+
+            timeCounter = 0;
+
+            CharacterMoveDelay = playermovedelay;
         }
 
-        public void Update()
+        public void Update(int frameTime)
         {
+            timeCounter += frameTime;
+
             switch (State)
             {
                 case BoardStates.PLAYER_MOVING:
@@ -90,41 +85,43 @@ namespace Common
                     }
                     else
                     {
-                        //Move player
-
-                        var currentCharacter = Characters[CurrentPlayer];
-                        var allowedMovement = CanWalk(currentCharacter).ToList();
-                        
-                        if (!allowedMovement.Contains(currentCharacter.Facing) && allowedMovement.Count > 0)
+                        if (timeCounter >= CharacterMoveDelay)
                         {
-                            currentCharacter.Facing = allowedMovement[0];
-                        }
+                            //Move Character
+                            var currentCharacter = Characters[CurrentPlayer];
+                            var allowedMovement = CanWalk(currentCharacter).ToList();
 
-                        if (allowedMovement.Contains(currentCharacter.Facing))
-                        {
-                            var offset = GetTileOffset(currentCharacter.Facing).ToArray();
-
-                            currentCharacter.X += offset[0];
-                            currentCharacter.Y += offset[1];
-
-                            Notify(new GameEvent(GameEvent.EventTypes.BOARD_PLAYER_MOVED, new byte[3] { CurrentPlayer, (byte)currentCharacter.X, (byte)currentCharacter.Y }));
-
-                            if (TileMap[currentCharacter.X, currentCharacter.Y].Type == Tile.TileTypes.FORK)
+                            if (!allowedMovement.Contains(currentCharacter.Facing) && allowedMovement.Count > 0)
                             {
-                                byte[] data = new byte[5] { CurrentPlayer, 0, 0, 0, 0 };
-                                ChosenDirection = TileMap[currentCharacter.X, currentCharacter.Y].Forks[0];
-                                Notify(new Events.BoardPlayerChoosingDirectionOptions(TileMap[currentCharacter.X, currentCharacter.Y], CurrentPlayer));
-                                State = BoardStates.PLAYER_CHOOSING_FORK;
+                                currentCharacter.Facing = allowedMovement[0];
+                            }
+
+                            if (allowedMovement.Contains(currentCharacter.Facing))
+                            {
+                                var offset = GetTileOffset(currentCharacter.Facing).ToArray();
+
+                                currentCharacter.X += offset[0];
+                                currentCharacter.Y += offset[1];
+
+                                Notify(new GameEvent(GameEvent.EventTypes.BOARD_PLAYER_MOVED, new byte[3] { CurrentPlayer, (byte)currentCharacter.X, (byte)currentCharacter.Y }));
+
+                                if (TileMap[currentCharacter.X, currentCharacter.Y].Type == Tile.TileTypes.FORK)
+                                {
+                                    byte[] data = new byte[5] { CurrentPlayer, 0, 0, 0, 0 };
+                                    ChosenDirection = TileMap[currentCharacter.X, currentCharacter.Y].Forks[0];
+                                    Notify(new Events.BoardPlayerChoosingDirectionOptions(TileMap[currentCharacter.X, currentCharacter.Y], CurrentPlayer));
+                                    State = BoardStates.PLAYER_CHOOSING_FORK;
+                                }
+                                else
+                                {
+                                    //Only decrease the roll value if the player is not on a fork
+                                    RollValue--;
+                                }
                             }
                             else
                             {
-                                //Only decrease the roll value if the player is not on a fork
-                                RollValue--;
+                                RollValue = 0;
                             }
-                        }
-                        else
-                        {
-                            RollValue = 0;
                         }
                     }
                     break;
