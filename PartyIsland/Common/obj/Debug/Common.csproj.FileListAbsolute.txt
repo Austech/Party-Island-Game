@@ -7,3 +7,4 @@ C:\Users\Austin\Documents\GitHub\Party-Island-Game\PartyIsland\Common\bin\Debug\
 C:\Users\Austin\Documents\GitHub\Party-Island-Game\PartyIsland\Common\bin\Debug\Common.pdb
 C:\Users\Austin\Documents\GitHub\Party-Island-Game\PartyIsland\Common\obj\Debug\Common.dll
 C:\Users\Austin\Documents\GitHub\Party-Island-Game\PartyIsland\Common\obj\Debug\Common.pdb
+C:\Users\Austin\Documents\GitHub\Party-Island-Game\PartyIsland\Common\obj\Debug\Common.csprojResolveAssemblyReference.cache

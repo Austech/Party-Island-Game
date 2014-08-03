@@ -7,7 +7,7 @@ namespace Common
 {
     public class Game
     {
-        GameState currentState;
+        IGameSystem currentState;
 
         /// <summary>
         /// Time in milliseconds of the delay per each update
@@ -49,6 +49,7 @@ namespace Common
 
             gameUpdateWatch.Reset();
             gameUpdateWatch.Stop();
+            gameUpdateWatch.Start();
 
             for (; deltaUpdateTime >= GameUpdateRate; deltaUpdateTime -= GameUpdateRate)
             {
@@ -56,7 +57,7 @@ namespace Common
             }
         }
 
-        public void SetGameState(GameState gs)
+        public void SetGameState(IGameSystem gs)
         {
             currentState = gs;
         }

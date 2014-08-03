@@ -9,7 +9,7 @@ namespace Common.GameStates
     /// <summary>
     /// State for handling players selecting the character they want to choose
     /// </summary>
-    public class CharacterSelection : GameState, IGameSubject, IGameObserver, IStateEncodable
+    public class CharacterSelection : IGameSystem, IGameSubject, IGameObserver, IStateEncodable
     {
         public class CharacterSelectionData
         {
@@ -47,9 +47,7 @@ namespace Common.GameStates
             }
         }
 
-        public override void Update(float dt)
-        {
-        }
+        public void Update(int dt) { }
 
         private bool IsSelected(int id)
         {

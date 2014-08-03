@@ -47,8 +47,9 @@
     <Compile Include="Events\BoardPlayerChoosingDirectionOptions.cs" />
     <Compile Include="Events\GameInput.cs" />
     <Compile Include="Game.cs" />
-    <Compile Include="GameState.cs" />
-    <Compile Include="GameStates\CharacterSelection.cs" />
+    <Compile Include="GameSystems\BoardState.cs" />
+    <Compile Include="IGameSystem.cs" />
+    <Compile Include="GameSystems\CharacterSelection.cs" />
     <Compile Include="IGameObserver.cs" />
     <Compile Include="IGameSubject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

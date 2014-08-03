@@ -98,6 +98,7 @@ namespace Server
             var server = new GameServer(500);
             var game = new Game();
             var characterSelection = new Common.GameStates.CharacterSelection();
+            var boardSystem = new Common.GameStates.BoardSystem(board, 100);
 
             for (var i = 0; i < board.TileMap.GetLength(0); i++)
             {
@@ -113,34 +114,25 @@ namespace Server
                 }
             }
 
-            game.SetGameState(characterSelection);
+            board.Characters.Add(new BoardCharacter());
+            game.SetGameState(boardSystem);
 
-
-            //In this  example, all observers/subjects listen to eachother.
-            characterSelection.AddObserver(DebugObserver.HandleEvent);
-            characterSelection.AddObserver(server.HandleEvent);
-
+            server.AddObserver(boardSystem.HandleEvent);
+            boardSystem.AddObserver(server.HandleEvent);
+            boardSystem.AddObserver(DebugObserver.HandleEvent);
             server.AddObserver(DebugObserver.HandleEvent);
-            server.AddObserver(characterSelection.HandleEvent);
-            server.AddObserver(board.HandleEvent);
-            server.AddObserver(HandleEvent);
-
-            DebugObserver.AddObserver(server.HandleEvent);
-            DebugObserver.AddObserver(characterSelection.HandleEvent);
-            DebugObserver.AddObserver(board.HandleEvent);
-
-            board.AddObserver(DebugObserver.HandleEvent);
-            board.AddObserver(server.HandleEvent);
-
+            DebugObserver.AddObserver(boardSystem.HandleEvent);
+            
             server.Start();
 
             new Thread(new ThreadStart(InputThread)).Start();   //New thread for constant console input for manual events
 
+            game.Start();
+
             for (; ; )
             {
-                board.Update();
-                //game.Update(0);
-                server.Update();
+                game.Update();
+                //server.Update();
 
                 Thread.Sleep(1);
             }

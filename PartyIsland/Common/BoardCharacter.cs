@@ -33,7 +33,6 @@ namespace Common
 
         public FacingDirections Facing;
         public Tile.TileTypes LandedTileType;
-
         public int X, Y;
         public int Cash;
 
